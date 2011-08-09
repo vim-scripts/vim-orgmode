@@ -1,12 +1,22 @@
 This is a mirror of http://www.vim.org/scripts/script.php?script_id=3642
 
-Description						       *org-description*
+DESCRIPTION						       *org-description*
 
-vim-orgmode is an attempt to port org-mode (http://orgmode.org) to vim.
+Text outlining and task management for Vim based on Emacs' Org-Mode.
 
-==============================================================================
+The idea for this plugin was born by listening to the Floss Weekly podcast
+introducing Emacs Org-Mode (http://twit.tv/floss136). Org-Mode has a lot of
+strong features like folding, views (sparse tree) and scheduling of tasks.
+These are completed by hyperlinks, tags, todo states, priorities aso.
 
-Usage								     *org-usage*
+Vim-orgmode aims at providing the same functionality for Vim and for command
+line tools*.
+
+* for command line tools and other programs a library liborgmode is provided.
+  It encapsulates all functionality for parsing and modifying Org-Mode files.
+
+USAGE								     *org-usage*
+
   vim-orgmode aims to be clone of the original orgmode for Emacs. Since Emacs
   is not vim the clone is not aiming for 100% compatibility.  Especially in
   terms of the keybindings there will be major differences!
@@ -39,6 +49,8 @@ Text objects~
 
    g{ - execute command from current position to the beginning of the parent
         heading
+   g} - execute command from current position to the beginning of the parent's
+        next sibling
    {  - execute command from current position to the beginning of the current
         heading
    }  - execute command from current position to the end of the current
@@ -74,7 +86,7 @@ Suggested plugins~
     text linking, the Hyperlinks feature of vim-orgmode depends on this plugin
 
 ==============================================================================
-Customization						     *org-customization*
+CUSTOMIZATION						     *org-customization*
 
 Remapping shortcuts~
   vim-orgmode provides an easy way for remapping the default keyboard
@@ -161,23 +173,3 @@ decoration to underline:
     \		[':foreground red', ':background black', ':weight bold',
     \		':slant italic', ':decoration underline']]]
 <
-
-==============================================================================
-Links								     *org-links*
-
-Original org-mode for Emacs (http://orgmode.org)
-
-VimOrganizer, another vim port of org-mode
-(vimscript#3342)
-
-==============================================================================
-Changelog							 *org-changelog*
-
-0.2.1-0, 2011-06-26
-- fix encoding of todo states set by the Todo plugin (thanks to Daniel Carl
-  and kien for pointing out the issue)
-- add documentation for remapping shortcuts
-- add documentation for customizing syntax highlighting
-
-0.2.0-0, 2011-06-25
-- initial release

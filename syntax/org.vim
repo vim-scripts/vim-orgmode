@@ -54,7 +54,7 @@ unlet! s:i
 if !exists('g:loaded_org_syntax')
 	let g:loaded_org_syntax = 1
 
-	function! s:ExtendHighlightingGroup(base_group, new_group, settings)
+	function! OrgExtendHighlightingGroup(base_group, new_group, settings)
 		let l:base_hi = ''
 		redir => l:base_hi
 		silent execute 'highlight ' . a:base_group
@@ -63,7 +63,7 @@ if !exists('g:loaded_org_syntax')
 		execute 'highlight ' . a:new_group . l:group_hi . ' ' . a:settings
 	endfunction
 
-	function! s:InterpretFaces(faces)
+	function! OrgInterpretFaces(faces)
 		let l:res_faces = ''
 		if type(a:faces) == 3
 			let l:style = []
@@ -150,16 +150,19 @@ if !exists('g:loaded_org_syntax')
 				let l:default_group = 'Question'
 				continue
 			endif
+			" strip access key
+			let l:_i = substitute(l:i, "\(.*$", "", "")
+
 			let l:group = l:default_group
 			for l:j in g:org_todo_keyword_faces
-				if l:j[0] == l:i
-					let l:group = 'org_todo_keyword_face_' . l:i
-					call s:ExtendHighlightingGroup(l:default_group, l:group, s:InterpretFaces(l:j[1]))
+				if l:j[0] == l:_i
+					let l:group = 'org_todo_keyword_face_' . l:_i
+					call OrgExtendHighlightingGroup(l:default_group, l:group, OrgInterpretFaces(l:j[1]))
 					break
 				endif
 			endfor
-			exec 'syntax match org_todo_keyword_' . l:i . ' /\*\{1,\}\s\{1,\}\zs' . l:i .'/ ' . a:todo_headings
-			exec 'hi def link org_todo_keyword_' . l:i . ' ' . l:group
+			exec 'syntax match org_todo_keyword_' . l:_i . ' /\*\{1,\}\s\{1,\}\zs' . l:_i .'/ ' . a:todo_headings
+			exec 'hi def link org_todo_keyword_' . l:_i . ' ' . l:group
 		endfor
 	endfunction
 endif
@@ -176,8 +179,20 @@ hi def link org_property Statement
 hi def link org_property_value Constant
 
 " Timestamps
-syn match org_timestamp /\(<\d\{4\}-\d\{2\}-\d\{2\} .\+>\|<\d\{4\}-\d\{2\}-\d\{2\} .\+>--<\d\{4\}-\d\{2\}-\d\{2\} .\+>\|<%%(diary-float.\+>\)/
-syn match org_timestamp_inactive /\(\[\d\{4\}-\d\{2\}-\d\{2\} .\+\]\|\[\d\{4\}-\d\{2\}-\d\{2\} .\+\]--\[\d\{4\}-\d\{2\}-\d\{2\} .\+\]\|\[%%(diary-float.\+\]\)/
+syn match org_timestamp /\(<\d\{4\}-\d\{2\}-\d\{2\} \a\a\a>\)/
+syn match org_timestamp /\(<\d\{4\}-\d\{2\}-\d\{2\} \a\a\a \d\d:\d\d>\)/
+
+syn match org_timestamp /\(<\d\{4\}-\d\{2\}-\d\{2\} \a\a\a>--<\d\{4\}-\d\{2\}-\d\{2\} \a\a\a>\)/
+syn match org_timestamp /\(<\d\{4\}-\d\{2\}-\d\{2\} \a\a\a \d\d:\d\d>--<\d\{4\}-\d\{2\}-\d\{2\} \a\a\a \d\d:\d\d>\)/
+syn match org_timestamp /\(<%%(diary-float.\+>\)/
+
+syn match org_timestamp_inactive /\(\[\d\{4\}-\d\{2\}-\d\{2\} \a\a\a\]\)/
+syn match org_timestamp_inactive /\(\[\d\{4\}-\d\{2\}-\d\{2\} \a\a\a \d\d:\d\d\]\)/
+
+syn match org_timestamp_inactive /\(\[\d\{4\}-\d\{2\}-\d\{2\} \a\a\a\]--\[\d\{4\}-\d\{2\}-\d\{2\} \a\a\a\]\)/
+syn match org_timestamp_inactive /\(\[\d\{4\}-\d\{2\}-\d\{2\} \a\a\a \d\d:\d\d\]--\[\d\{4\}-\d\{2\}-\d\{2\} \a\a\a \d\d:\d\d\]\)/
+syn match org_timestamp_inactive /\(\[%%(diary-float.\+\]\)/
+
 hi def link org_timestamp PreProc
 hi def link org_timestamp_inactive Comment
 
