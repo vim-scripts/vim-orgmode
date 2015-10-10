@@ -31,20 +31,26 @@ _DATE_PASSIVE_REGEX = re.compile(r"\[(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w\]")
 
 # <2011-09-12 Mon 10:20>
 _DATETIME_REGEX = re.compile(
-		r"<(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w (\d{1,2}):(\d\d)>")
+	r"<(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w (\d{1,2}):(\d\d)>")
 # [2011-09-12 Mon 10:20]
 _DATETIME_PASSIVE_REGEX = re.compile(
-		r"\[(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w (\d{1,2}):(\d\d)\]")
+	r"\[(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w (\d{1,2}):(\d\d)\]")
 
 # <2011-09-12 Mon>--<2011-09-13 Tue>
 _DATERANGE_REGEX = re.compile(
-		r"<(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w>--<(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w>")
+	# <2011-09-12 Mon>--
+	r"<(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w>--"
+	# <2011-09-13 Tue>
+	"<(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w>")
 # <2011-09-12 Mon 10:00>--<2011-09-12 Mon 11:00>
 _DATETIMERANGE_REGEX = re.compile(
-		r"<(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w (\d\d):(\d\d)>--<(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w (\d\d):(\d\d)>")
+	# <2011-09-12 Mon 10:00>--
+	r"<(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w (\d\d):(\d\d)>--"
+	# <2011-09-12 Mon 11:00>
+	"<(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w (\d\d):(\d\d)>")
 # <2011-09-12 Mon 10:00--12:00>
 _DATETIMERANGE_SAME_DAY_REGEX = re.compile(
-		r"<(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w (\d\d):(\d\d)-(\d\d):(\d\d)>")
+	r"<(\d\d\d\d)-(\d\d)-(\d\d) [A-Z]\w\w (\d\d):(\d\d)-(\d\d):(\d\d)>")
 
 
 def get_orgdate(data):
@@ -84,7 +90,7 @@ def _text2orgdate(string):
 	if result:
 		try:
 			(syear, smonth, sday, shour, smin, ehour, emin) = \
-					[int(m) for m in result.groups()]
+				[int(m) for m in result.groups()]
 			start = datetime.datetime(syear, smonth, sday, shour, smin)
 			end = datetime.datetime(syear, smonth, sday, ehour, emin)
 			return OrgTimeRange(True, start, end)
@@ -95,8 +101,8 @@ def _text2orgdate(string):
 	result = _DATETIMERANGE_REGEX.search(string)
 	if result:
 		try:
-			(syear, smonth, sday, shour, smin,
-					eyear, emonth, eday, ehour, emin) = [int(m) for m in result.groups()]
+			tmp = [int(m) for m in result.groups()]
+			(syear, smonth, sday, shour, smin, eyear, emonth, eday, ehour, emin) = tmp
 			start = datetime.datetime(syear, smonth, sday, shour, smin)
 			end = datetime.datetime(eyear, emonth, eday, ehour, emin)
 			return OrgTimeRange(True, start, end)
@@ -107,7 +113,8 @@ def _text2orgdate(string):
 	result = _DATERANGE_REGEX.search(string)
 	if result:
 		try:
-			syear, smonth, sday, eyear, emonth, ehour = [int(m) for m in result.groups()]
+			tmp = [int(m) for m in result.groups()]
+			syear, smonth, sday, eyear, emonth, ehour = tmp
 			start = datetime.date(syear, smonth, sday)
 			end = datetime.date(eyear, emonth, ehour)
 			return OrgTimeRange(True, start, end)
@@ -240,36 +247,38 @@ class OrgTimeRange(object):
 			if isinstance(self.start, datetime.datetime):
 				# if start and end are on same the day
 				if self.start.year == self.end.year and\
-						self.start.month == self.end.month and\
-						self.start.day == self.end.day:
+					self.start.month == self.end.month and\
+					self.start.day == self.end.day:
 					return u"<%s-%s>" % (
-							self.start.strftime(u'%Y-%m-%d %a %H:%M'),
-							self.end.strftime(u'%H:%M'))
+						self.start.strftime(u'%Y-%m-%d %a %H:%M'),
+						self.end.strftime(u'%H:%M'))
 				else:
 					return u"<%s>--<%s>" % (
-							self.start.strftime(u'%Y-%m-%d %a %H:%M'),
-							self.end.strftime(u'%Y-%m-%d %a %H:%M'))
+						self.start.strftime(u'%Y-%m-%d %a %H:%M'),
+						self.end.strftime(u'%Y-%m-%d %a %H:%M'))
 			# date
 			if isinstance(self.start, datetime.date):
-				return u"<%s>--<%s>" % (self.start.strftime(u'%Y-%m-%d %a'),
-						self.end.strftime(u'%Y-%m-%d %a'))
+				return u"<%s>--<%s>" % (
+					self.start.strftime(u'%Y-%m-%d %a'),
+					self.end.strftime(u'%Y-%m-%d %a'))
 		# inactive
 		else:
 			if isinstance(self.start, datetime.datetime):
 				# if start and end are on same the day
 				if self.start.year == self.end.year and\
-						self.start.month == self.end.month and\
-						self.start.day == self.end.day:
+					self.start.month == self.end.month and\
+					self.start.day == self.end.day:
 					return u"[%s-%s]" % (
-							self.start.strftime(u'%Y-%m-%d %a %H:%M'),
-							self.end.strftime(u'%H:%M'))
+						self.start.strftime(u'%Y-%m-%d %a %H:%M'),
+						self.end.strftime(u'%H:%M'))
 				else:
 					return u"[%s]--[%s]" % (
-							self.start.strftime(u'%Y-%m-%d %a %H:%M'),
-							self.end.strftime(u'%Y-%m-%d %a %H:%M'))
+						self.start.strftime(u'%Y-%m-%d %a %H:%M'),
+						self.end.strftime(u'%Y-%m-%d %a %H:%M'))
 			if isinstance(self.start, datetime.date):
-				return u"[%s]--[%s]" % (self.start.strftime(u'%Y-%m-%d %a'),
-						self.end.strftime(u'%Y-%m-%d %a'))
+				return u"[%s]--[%s]" % (
+					self.start.strftime(u'%Y-%m-%d %a'),
+					self.end.strftime(u'%Y-%m-%d %a'))
 
 	def __str__(self):
 		return self.__unicode__().encode(u'utf-8')

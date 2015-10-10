@@ -22,10 +22,10 @@ from UserList import UserList
 
 import vim
 
-import settings
-from exceptions import BufferNotFound, BufferNotInSync
-from liborgmode.documents import Document, MultiPurposeList, Direction
-from liborgmode.headings import Heading
+from orgmode import settings
+from orgmode.exceptions import BufferNotFound, BufferNotInSync
+from orgmode.liborgmode.documents import Document, MultiPurposeList, Direction
+from orgmode.liborgmode.headings import Heading
 
 
 class VimBuffer(Document):
@@ -34,9 +34,9 @@ class VimBuffer(Document):
 		:bufnr:		0: current buffer, every other number refers to another buffer
 		"""
 		Document.__init__(self)
-		self._bufnr            = vim.current.buffer.number if bufnr == 0 else bufnr
-		self._changedtick      = -1
-		self._cached_heading   = None
+		self._bufnr          = vim.current.buffer.number if bufnr == 0 else bufnr
+		self._changedtick    = -1
+		self._cached_heading = None
 
 		if self._bufnr == vim.current.buffer.number:
 			self._content = VimBufferContent(vim.current.buffer)
@@ -60,7 +60,7 @@ class VimBuffer(Document):
 
 	@property
 	def tag_column(self):
-		return int(settings.get('org_tag_column', '77'))
+		return int(settings.get(u'org_tag_column', u'77'))
 
 	@property
 	def is_insync(self):
@@ -76,7 +76,7 @@ class VimBuffer(Document):
 		return self._bufnr
 
 	def changedtick():
-		""" Number of changes in vimbuffer """
+		u""" Number of changes in vimbuffer """
 		def fget(self):
 			return self._changedtick
 		def fset(self, value):
@@ -244,6 +244,34 @@ class VimBuffer(Document):
 		heading._orig_len = len(heading)
 
 		return heading
+
+	def write_checkbox(self, checkbox, including_children=True):
+		if including_children and checkbox.children:
+			for child in checkbox.children[::-1]:
+				self.write_checkbox(child, including_children)
+
+		if checkbox.is_dirty:
+			if checkbox._orig_start is not None:
+				# this is a heading that existed before and was changed. It
+				# needs to be replaced
+				# print "checkbox is dirty? " + str(checkbox.is_dirty_checkbox)
+				# print checkbox
+				if checkbox.is_dirty_checkbox:
+					self._content[checkbox._orig_start:checkbox._orig_start + 1] = [unicode(checkbox)]
+				if checkbox.is_dirty_body:
+					self._content[checkbox._orig_start + 1:checkbox._orig_start + checkbox._orig_len] = checkbox.body
+			else:
+				# this is a new checkbox. It needs to be inserted
+				raise ValueError('Checkbox must contain the attribute _orig_start! %s' % checkbox)
+			checkbox._dirty_checkbox = False
+			checkbox._dirty_body = False
+		# for all headings the length offset needs to be updated
+		checkbox._orig_len = len(checkbox)
+
+		return checkbox
+
+	def write_checkboxes(self, checkboxes):
+		pass
 
 	def previous_heading(self, position=None):
 		u""" Find the next heading (search forward) and return the related object

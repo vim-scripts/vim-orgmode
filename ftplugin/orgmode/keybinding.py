@@ -11,6 +11,7 @@ MODE_OPERATOR = u'o'
 OPTION_BUFFER_ONLY = u'<buffer>'
 OPTION_SLIENT = u'<silent>'
 
+
 def _register(f, name):
 	def r(*args, **kwargs):
 		p = f(*args, **kwargs)
@@ -20,11 +21,14 @@ def _register(f, name):
 		return p
 	return r
 
+
 def register_keybindings(f):
 	return _register(f, u'keybindings')
 
+
 def register_commands(f):
 	return _register(f, u'commands')
+
 
 class Command(object):
 	u""" A vim command """
@@ -81,6 +85,7 @@ class Command(object):
 					u'command': self.command}
 				).encode(u'utf-8'))
 
+
 class Plug(object):
 	u""" Represents a <Plug> to an abitrary command """
 
@@ -116,6 +121,7 @@ class Plug(object):
 	@property
 	def mode(self):
 		return self._mode
+
 
 class Keybinding(object):
 	u""" Representation of a single key binding """
@@ -182,7 +188,7 @@ class Keybinding(object):
 		return self._silent
 
 	def create(self):
-		from orgmode import ORGMODE, echom
+		from orgmode._vim import ORGMODE, echom
 
 		cmd = self._mode
 		if cmd == MODE_ALL:
